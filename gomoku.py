@@ -1,3 +1,8 @@
+#Xiang Fan
+#Gefei Tian
+#
+#
+
 
 import random
 import copy
@@ -11,18 +16,18 @@ class Player():
         self.symbol = symbol
 
     #function that governs a turn
-    def turn(self, game):
+    def place_coin(self, game):
         correct = 0
         #ask where the player would like to place their piece
         while correct == 0:
             try:
-                pos = input('Please type the position you would like to place your piece: ')
+                pos = input('Choose the position of your piece by entering the number on board: ')
                 if pos in game.remaining:
                     correct = 1
                 else:
-                    print "Error: invalid input, please try again!!!. \n"
+                    print "Error: invalid input. \n"
             except:
-                print "Error: invalid input, please try again, \n"
+                print "Error: invalid input. \n"
 
         game.remaining.remove(pos)
         self.replace(game, game.position_dict[pos])
@@ -42,7 +47,7 @@ class AI(Player):
         else:
             self.opponent = 'X'
 
-    def turn(self, game):
+    def moves(self, game):
         #intilise variables
         self.position_type = {}
         self.position_points = {}
@@ -134,36 +139,33 @@ class AI(Player):
         
 class Game(object):
     def __init__(self):
-        self.player1, self.player2 = self.startup()
+        self.player1, self.player2 = self.setup()
         self.mode = 1
         self.length = 15
         self.active = 0
         self.speed = 0
         self.learning = 0
     
-    #function to determine the game settings
-    def startup(self):
+    def setup(self):
         
-        #Give the players appropriate names
-        
+        print "This is our Gomoku porject for CS5150 by Xiang Fan and Gefei Tian, this game will play against itself and start learning in 10 seconds..."
+        print "Please make sure to have the terminal window big enough to see the whole game"
+        time.sleep(15)
         player1, player2 = Player('you', 'X'), AI('the Computer', 'O')
         
-        #return variables
         return player1, player2
 
-
-    #function which executes turns    
+  
     def play_game(self, player1, player2):
         self.board = [[x*self.length+(y+1) for y in range(self.length)] for x in range(self.length)]
         self.remaining = [i for i in range(1,self.length**2+1)]    
         self.position_dict = {}
         
-        #build the position dictionary
         for i in range(1,self.length**2+1):
             self.position_dict[i] = ((i-1)/self.length,(i-1)%self.length)
 
         self.draw_board()
-        #loop to execute turns    
+ 
         for i in range(self.length**2):
             #determine whose turn it is
             if self.active%2 == 0:
@@ -188,21 +190,19 @@ class Game(object):
                 else:
                     winner = player2.name + '(O)'
                 if self.mode == 1 and winner == player2.name + '(O)':
-                    print '\n' + '/'*40 + '\nSorry! You lost!\n' + '/'*40 + '\n'
+                    print '\n' + '**'*20 + '\n You lost, better luck next time!\n' + '**'*20 + '\n'
                     break
                 else:
-                    print '\n' + '/'*40+ '\n Congratulations! ' + winner.capitalize() +\
-                    ' Won!\n' + '/'*40 + '\n'
+                    print '\n' + '**'*20+ '\n Congratulations, you won! ' + winner.capitalize() +\
+                    '\n' + '**'*20 + '\n'
                     break
 
-        #condition if the game is a tie
+        #check tie
         if win_symbol == None:
-            print '\n' + '/'*40 + '\n' + 'The game is a draw.\n' + '/'*40 + '\n'
+            print '\n' + '=='*20 + '\n' + 'The game is a draw.\n' + '=='*20 + '\n'
 
 
-    #function to check if someone has won the game
     def check_winners(self):
-        #build the list through which to check
         checklist = []
         for i in range(1, self.length+1):
             for element in self.pos_in_row(i):
@@ -221,7 +221,6 @@ class Game(object):
                 return 'X'
 
 
-    #tallies the number of each piece in a row
     def count_row(self, row):
         row_tally = {'O': 0, 'X': 0, 0: 0}
         for position in row:
@@ -231,14 +230,12 @@ class Game(object):
             row_tally[val] += 1
         return row_tally
 
-    #function which returns list of positions in a row
     def pos_in_row(self, row_number):
         result = []
         for i in range(self.length-5+1):
             result.append(range((row_number-1)*self.length+1+i,(row_number-1)*self.length+1+i+5))
         return result
 
-    #function which returns list of positions in a column
     def pos_in_col(self, col_number):
         result = []
         for i in range(self.length-5+1):
@@ -252,17 +249,22 @@ class Game(object):
         result = []
         if dia_number == 0:
             for row_number in range(1, self.length-5+2):
-                x_pos = x_pos.union(set(range((row_number-1)*self.length+1,(row_number-1)*self.length+self.length+1)))
+                x_pos = x_pos.union(set(range((row_number-1)
+                  *self.length+1,(row_number-1)
+                  *self.length+self.length+1)))
                 y_pos = y_pos.union(set(range(row_number, self.length**2+1, self.length)))
             for start_pos in x_pos.intersection(y_pos):
-                result.append(range(start_pos,start_pos+(5-1)*(self.length+1)+1,self.length+1))
+                result.append(range(start_pos,start_pos+(5-1)
+                  *(self.length+1)+1,self.length+1))
         if dia_number == 1:
             for row_number in range(1, self.length-5+2):
-                x_pos = x_pos.union(set(range((row_number-1)*self.length+1,(row_number-1)*self.length+self.length+1)))
+                x_pos = x_pos.union(set(range((row_number-1)
+                  *self.length+1,(row_number-1)*self.length+self.length+1)))
             for row_number in range(self.length, 5-1, -1):
                 y_pos = y_pos.union(set(range(row_number, self.length**2+1, self.length)))
             for start_pos in x_pos.intersection(y_pos):
-                result.append(range(start_pos, start_pos + (5-1)*(self.length-1) + 1,self.length-1))
+                result.append(range(start_pos, start_pos + 
+                  (5-1)*(self.length-1) + 1,self.length-1))
         return result
 
     
@@ -272,7 +274,7 @@ class Game(object):
             if row%2 == 0:
                 print '-',
                 for i in range(self.length):
-                    print '---',
+                    print '===',
                     print '-',
                 print
             else:
@@ -297,14 +299,14 @@ class Game(object):
         new_v = 0
         
         new.VALUE[value] += i
-        self.mock_round(old, new)
-        if self.mock_round(old, new): old_v = old_v + 1
+        self.self_play(old, new)
+        if self.self_play(old, new): old_v = old_v + 1
         else: new_v += 1
         
         if new.VALUE[value] - i > 0:
             new.VALUE[value] -= i
-            self.mock_round(old, new)
-            if self.mock_round(old, new): old_v = old_v + 1
+            self.self_play(old, new)
+            if self.self_play(old, new): old_v = old_v + 1
             else: new_v += 1
         
 
@@ -329,36 +331,23 @@ class Game(object):
 
         player.switch(old_ai)
         self.learning = 0
-        print "new: " + str(new)
-        print "old: " + str(old)
-#        print """\n%s\n%s\n%s\nFinished learning! %d games in %d seconds.
-#Final intelligence scores:\n (co1: %d co2: %d, co3: %d, co4: %d, co5: %d)\n%s\n%s\n%s\n""" % ('/'*40,'/'*40,'/'*40, counter,\
-#                                                                 time.clock() - start_time,\
-#                                                                 player.co1, player.co2, player.co3, player.co4, player.co5,\
-#                                                                         '/'*40,'/'*40,'/'*40)
                                                                  
-    #controller of a mock game
-    def mock_round(self, old_ai, new_ai):
+    def self_play(self, old_ai, new_ai):
 
-#        if self.speed != 3:
-#            print new_ai.co1, new_ai.co2, new_ai.co3, new_ai.co4, new_ai.co5, 'NEW AI Intelligence'
-#            print old_ai.co1, old_ai.co2, old_ai.co3, old_ai.co4, old_ai.co5, 'OLD AI Intelligence'
-        if self.play_mock_game(old_ai, new_ai, 1) == 'O':
+        if self.self_game_play(old_ai, new_ai, 1) == 'O':
             old_ai.switch(new_ai)
        
 
         if self.speed != 3:
-#            print "\n%s\nEnd of game: %d. Current intelligence scores: \n (co1: %d co2: %d, co3: %d, co4: %d, co5: %d).\n%s\n"\
-#                  % ('/'*40, counter, old_ai.co1, old_ai.co2, old_ai.co3, old_ai.co4, old_ai.co5, '/'*40)
             time.sleep(0.3)
             
         new_ai.switch(old_ai)
-        return (self.play_mock_game(old_ai, new_ai, 1) == 'O')
+        return (self.self_game_play(old_ai, new_ai, 1) == 'O')
 
         
         
     #the mock counterpart of play_game(), plays a mock game
-    def play_mock_game(self, player1, player2, active):
+    def self_game_play(self, player1, player2, active):
         self.board = [[x*self.length+(y+1) for y in range(self.length)] for x in range(self.length)]
         self.remaining = [i for i in range(1,self.length**2+1)]    
         self.position_dict = {}
@@ -373,13 +362,13 @@ class Game(object):
                     print "It old AI's turn " + " (X)"
                     self.draw_board()
                     time.sleep(0.3)
-                player1.turn(self)
+                player1.moves(self)
             else:
                 if self.speed == 1:
                     print "It is new AI's turn. " + "(O)"
                     self.draw_board()
                     time.sleep(0.3)
-                player2.turn(self)
+                player2.moves(self)
 
             active += 1
             
@@ -394,14 +383,14 @@ class Game(object):
                     winner = player1.name + '(X)'
                 else:
                     winner = player2.name + '(O)'
-                if self.speed != 3: print "\n%s\n%s Won!\n%s\n" % ('/'*40, winner, '/'*40)
+                if self.speed != 3: print "\n%s\n%s Won!\n%s\n" % ('**'*40, winner, '**'*40)
                 if self.speed == 2: self.draw_board()
                 return win_symbol
         
 
         #condition if the game is a tie
         if win_symbol == None:
-            if self.speed != 3: print '\n' + '/'*40 + '\n' + 'The game is a draw.\n' + '/'*40 + '\n'
+            if self.speed != 3: print '\n' + '**'*40 + '\n' + 'The game is a draw.\n' + '**'*40 + '\n'
         if self.speed == 2: self.draw_board()
         return win_symbol
         
@@ -415,21 +404,21 @@ def main():
 
     #AI Learning
     if game.mode  == 1:
-        speed = 3
+        speed = 2
         game.learn(player2,speed)
         
     #randomly determine the game order
-    print "\nThe turn order has been randomly determined: "
+    print "\nThe order of the game is randomly decided: "
     if random.randint(0,1) == 0:
         game.active = 0 #sets active player
-        print player1.name.capitalize() + ' (X) will go first, ' +\
-              player2.name + ' (O) will go second.'
+        print player1.name.capitalize() + ' (X) play first, ' +\
+              player2.name + ' (O) play second.'
     else:
         game.active = 1
-        print player2.name.capitalize() + ' (O) will go first, ' +\
-              player1.name + ' (X) will go second.'
+        print player2.name.capitalize() + ' (O) play first, ' +\
+              player1.name + ' (X) play second.'
         
-    raw_input("\n%s\nGame Ready. Press Enter to begin.\n%s\n" %('/'*50, '/'*50))
+    raw_input("\n%s\nLearning has completed, please hit enter to start the game.\n%s\n" %('*'*40, '*'*40))
             
     #plays the game
     while True:
