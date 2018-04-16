@@ -15,10 +15,8 @@ class Player():
         self.name = name
         self.symbol = symbol
 
-    #function that governs a turn
     def place_coin(self, game):
         correct = 0
-        #ask where the player would like to place their piece
         while correct == 0:
             try:
                 pos = input('Choose the position of your piece by entering the number on board: ')
@@ -37,9 +35,7 @@ class Player():
 
 class AI(Player):
     def __init__(self, name, symbol):
-        #Borrows parent co-efficients
         Player.__init__(self, name, symbol)
-        #initilise intelligence co-efficients
         self.VALUE = {'FIVE' : 999999999, 'FOUR' : 9999999, 'ATTACK' : 10, 'DEFEND' : 10, 'NEUTRAL' : 5, 'MINE' : 5, 'OTHER' : 5}
     
         if self.symbol == 'X':
@@ -48,21 +44,18 @@ class AI(Player):
             self.opponent = 'X'
 
     def moves(self, game):
-        #intilise variables
+        #intilise 
         self.position_type = {}
         self.position_points = {}
         self.points_tally = {}
         for i in range(1,game.length**2+1):
             self.position_type[i] = [0,0]
-            self.position_points[i] = [0,0,0] #[attack,defend,neutral]
+            self.position_points[i] = [0,0,0] 
             self.points_tally[i] = 0
-        #thinks about all possible moves, adding points for all squares
 
         self.count_points(game)
-        #decides the best turn and makes it
         for position in range(1,game.length**2+1):
            
-            #Compute all other points through the elementwise vector multiplication
             self.points_tally[position] += self.position_points[position][0]*((self.position_type[position][0]**2))\
                                             + self.position_points[position][1]*((self.position_type[position][1]**2))
         
@@ -90,40 +83,32 @@ class AI(Player):
         checklist = []
         
         for i in range(1, game.length+1):
-            checklist.append(game.pos_in_row(i))
-            checklist.append(game.pos_in_col(i))
-        checklist.append(game.pos_in_dia(0))
-        checklist.append(game.pos_in_dia(1))
+            checklist.append(game.row_position(i))
+            checklist.append(game.col_position(i))
+        checklist.append(game.dirction(0))
+        checklist.append(game.dirction(1))
 
         for major_row in checklist:
             for row in major_row:
-                row_tally = game.count_row(row)
+                row_tally = game.number_in_row(row)
                     
                 for position in row:
                     if position in game.remaining:
                         
-                        #condition 0.1: Imminent victory
+                        #conditions for different situations
                         if row_tally[self.symbol] == 5-1 and row_tally[self.opponent] == 0 and game.learning == 0:
                             self.points_tally[position] += self.VALUE['FIVE']
                         elif row_tally[self.symbol] == 5-2 and row_tally[self.opponent] == 0 and game.learning == 0:
-                            self.points_tally[position] += self.VALUE['FOUR']
-                        
-                        #condition 0.2: Imminent defeat
+                            self.points_tally[position] += self.VALUE['FOUR']                        
                         elif row_tally[self.opponent] == 5-1 and row_tally[self.symbol] == 0 and game.learning == 0:
                             self.points_tally[position] += self.VALUE['FIVE']
                         elif row_tally[self.opponent] == 5-2 and row_tally[self.symbol] == 0 and game.learning == 0:
                             self.points_tally[position] += self.VALUE['FOUR']
-                        
-                        #condition 2: blank row
                         elif row_tally[self.symbol] + row_tally[self.opponent] == 0:
                             self.points_tally[position] += self.VALUE['NEUTRAL']
-                        
-                        #condition 1: Attacking row
                         elif row_tally[self.opponent] == 0:
                             self.position_type[position][int(math.fabs(index-1))] += 1
                             self.position_points[position][int(math.fabs(index-1))] += self.VALUE['ATTACK'] + row_tally[self.symbol]*self.VALUE['MINE']
-                        
-                        #condition 3: Defending row
                         elif row_tally[self.symbol] == 0:
                             self.position_type[position][index] += 1
                             self.position_points[position][index] += self.VALUE['DEFEND'] + row_tally[self.opponent]*self.VALUE['OTHER']
@@ -167,7 +152,7 @@ class Game(object):
         self.draw_board()
  
         for i in range(self.length**2):
-            #determine whose turn it is
+            #determine turns
             if self.active%2 == 0:
                 if self.mode == 1:
                     print "It is your turn." + " (X)"
@@ -205,14 +190,14 @@ class Game(object):
     def check_winners(self):
         checklist = []
         for i in range(1, self.length+1):
-            for element in self.pos_in_row(i):
-                checklist.append(self.count_row(element))
-            for element in self.pos_in_col(i):
-                checklist.append(self.count_row(element))
-        for element in self.pos_in_dia(0):
-            checklist.append(self.count_row(element))
-        for element in self.pos_in_dia(1):
-            checklist.append(self.count_row(element))
+            for element in self.row_position(i):
+                checklist.append(self.number_in_row(element))
+            for element in self.col_position(i):
+                checklist.append(self.number_in_row(element))
+        for element in self.dirction(0):
+            checklist.append(self.number_in_row(element))
+        for element in self.dirction(1):
+            checklist.append(self.number_in_row(element))
     
         for check in checklist:
             if check['O'] == 5:
@@ -221,7 +206,7 @@ class Game(object):
                 return 'X'
 
 
-    def count_row(self, row):
+    def number_in_row(self, row):
         row_tally = {'O': 0, 'X': 0, 0: 0}
         for position in row:
             val = self.board[self.position_dict[position][0]][self.position_dict[position][1]]
@@ -230,20 +215,19 @@ class Game(object):
             row_tally[val] += 1
         return row_tally
 
-    def pos_in_row(self, row_number):
+    def row_position(self, row_number):
         result = []
         for i in range(self.length-5+1):
             result.append(range((row_number-1)*self.length+1+i,(row_number-1)*self.length+1+i+5))
         return result
 
-    def pos_in_col(self, col_number):
+    def col_position(self, col_number):
         result = []
         for i in range(self.length-5+1):
             result.append(range(col_number+i*(self.length), self.length*(5+i)+1, self.length))
         return result
 
-    #funciton which returns list of positions in a diagonal (0 for left to right or 1 for right to left)
-    def pos_in_dia(self, dia_number):
+    def dirction(self, dia_number):
         x_pos = set([])
         y_pos = set([])
         result = []
@@ -267,8 +251,6 @@ class Game(object):
                   (5-1)*(self.length-1) + 1,self.length-1))
         return result
 
-    
-    #function to draw the game board
     def draw_board(self):
         for row in range(1+self.length*2):
             if row%2 == 0:
