@@ -38,7 +38,7 @@ class Player():
 class AI(Player):
     def __init__(self,color):
         Player.__init__(self,color)
-        self.VALUE = {'FOUR' : 9999999, 'THREE' : 99999, 'ATTACK' : 10, 'DEFEND' : 10, 'NEUTRAL' : 10, 'MINE' : 10, 'OTHER' : 10}
+        self.VALUE = {'FOUR' : 9999999, 'THREE' : 99999, 'ATTACK' : 0, 'DEFEND' : 0, 'NEUTRAL' : 0, 'MINE' : 0, 'OTHER' : 0}
         
         self.learn = 1
         
@@ -96,8 +96,8 @@ class AI(Player):
         for i in range(1, 16):
             checklist.append(game.row_position(i))
             checklist.append(game.col_position(i))
-        checklist.append(game.dirction(0))
-        checklist.append(game.dirction(1))
+        checklist.append(game.diagonal_position(0))
+        checklist.append(game.diagonal_position(1))
 
         for major_row in checklist:
             for row in major_row:
@@ -203,9 +203,9 @@ class Game(object):
                 checklist.append(self.number_in_row(element))
             for element in self.col_position(i):
                 checklist.append(self.number_in_row(element))
-        for element in self.dirction(0):
+        for element in self.diagonal_position(0):
             checklist.append(self.number_in_row(element))
-        for element in self.dirction(1):
+        for element in self.diagonal_position(1):
             checklist.append(self.number_in_row(element))
     
         for check in checklist:
@@ -230,17 +230,17 @@ class Game(object):
             result.append(range((row_number-1)*15+1+i,(row_number-1)*15+1+i+5))
         return result
 
-    def col_position(self, col_number):
+    def col_position(self, col):
         result = []
         for i in range(11):
-            result.append(range(col_number+i*(15), 15*(5+i)+1, 15))
+            result.append(range(col+i*(15), 15*(5+i)+1, 15))
         return result
 
-    def dirction(self, dia_number):
+    def diagonal_position(self, dia):
         x_pos = set([])
         y_pos = set([])
         result = []
-        if dia_number == 0:
+        if dia == 0:
             for row_number in range(1, 12):
                 x_pos = x_pos.union(set(range((row_number-1)
                   *15+1,(row_number-1)
@@ -249,7 +249,7 @@ class Game(object):
             for start_pos in x_pos.intersection(y_pos):
                 result.append(range(start_pos,start_pos+(4)
                   *(16)+1,16))
-        if dia_number == 1:
+        if dia == 1:
             for row_number in range(1, 15-5+2):
                 x_pos = x_pos.union(set(range((row_number-1)
                   *15+1,(row_number-1)*15+15+1)))
@@ -322,7 +322,6 @@ class Game(object):
 
             active += 1
             
-            #check for winners
             win_color = self.check_winners()
             if win_color != None:
                 if win_color == 'X':
@@ -335,6 +334,8 @@ def main():
     game = Game()
     player1 = game.player1
     player2 = game.player2
+    
+    game.depth = 10
     
     speed = 2
     
