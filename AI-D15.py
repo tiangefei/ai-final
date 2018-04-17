@@ -181,7 +181,7 @@ class Game(object):
             
             win_color = self.check_winners()
             if win_color != None:
-                if win_color == 'X':
+                if win_color == 'black':
                     winner = 'player1' + '(black)'
                 else:
                     winner = 'player2' + '(white)'
@@ -322,10 +322,9 @@ class Game(object):
 
             active += 1
             
-            #check for winners
             win_color = self.check_winners()
             if win_color != None:
-                if win_color == 'X':
+                if win_color == 'black':
                     winner = 'player1' + '(black)'
                 else:
                     winner = 'player2' + '(white)'
