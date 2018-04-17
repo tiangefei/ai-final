@@ -27,7 +27,6 @@ class Player():
         y = (pos - 1) // 15
         x = (pos - 1) % 15
             
-        game.black[x + 1][y + 1]=1
         game.q[x][y]=Circle(game.p[x][y],10)
         game.q[x][y].draw(game.window)
         game.q[x][y].setFill(self.color)
@@ -335,7 +334,7 @@ def main():
     player1 = game.player1
     player2 = game.player2
     
-    game.depth = 5
+    game.depth = 10
     
     speed = 2
     
